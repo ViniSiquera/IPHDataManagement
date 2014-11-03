@@ -133,7 +133,7 @@ Public Class RasterInteger
     End Function
 
     'Lê um raster e retorna dados em inteiro
-    Private Sub GetASCData(ByVal ArquivoASC As String)
+    Private Sub GetASCData(ByVal ArquivoASC As String, ByVal onlyHeader As Boolean)
 
         Dim r As New System.Text.RegularExpressions.Regex(" +")
         Dim val() As String
@@ -148,6 +148,8 @@ Public Class RasterInteger
                 val = r.Split(str.ReadLine) : _cellsize = CDbl(val(1)) 'Lê a linha do cellsize
                 val = r.Split(str.ReadLine) : _NODATAValue = CInt(val(1)) 'Lê a linha do NODATA
 
+                If onlyHeader = True Then GoTo endReading 'Lê apenas as informações do cabeçalho, caso ativado
+
                 ReDim _Data(_nRows - 1, _nCols - 1) 'Redimensiona a matriz de dados
 
                 For i = 0 To _nRows - 1
@@ -157,6 +159,7 @@ Public Class RasterInteger
                         If _Data(i, j) > _maxValue Then _maxValue = _Data(i, j)
                     Next
                 Next
+endReading:
             End Using
         End Using
     End Sub
@@ -164,7 +167,7 @@ Public Class RasterInteger
     ''' <summary>
     ''' Lê o arquivo no formato Binary Terrain Data
     ''' </summary>
-    Private Sub GetBinaryData(ByVal ArquivoBin As String)
+    Private Sub GetBinaryData(ByVal ArquivoBin As String, ByVal onlyHeader As Boolean)
         Using fs As New IO.FileStream(ArquivoBin, IO.FileMode.Open, IO.FileAccess.Read)
             Using br As New IO.BinaryReader(fs)
 
@@ -173,8 +176,10 @@ Public Class RasterInteger
                 _nRows = br.ReadInt32
                 _xllcorner = br.ReadDouble
                 _yllcorner = br.ReadDouble
-                _NODATAValue = br.ReadInt32
                 _cellsize = br.ReadDouble
+                _NODATAValue = br.ReadInt32
+
+                If onlyHeader = True Then GoTo endReading 'Lê apenas as informações do cabeçalho, caso ativado
 
                 'Redimensiona a matriz conforme numero de linhas e colunas
                 ReDim _Data(_nRows - 1, _nCols - 1)
@@ -185,19 +190,21 @@ Public Class RasterInteger
                         If _Data(i, j) > _maxValue Then _maxValue = _Data(i, j)
                     Next
                 Next
+endReading:
             End Using
         End Using
     End Sub
+
     ''' <summary>
     ''' Lê os dados a partir de um arquivo extero
     ''' </summary>
-    Public Sub ReadData(ByVal Filename As String)
+    Public Sub ReadData(ByVal Filename As String, Optional ByVal GetOnlyHeader As Boolean = False)
         Dim extension As String = IO.Path.GetExtension(Filename)
 
         If UCase(extension) = ".ASC" Then 'Extensão .ASC
-            GetASCData(Filename)
+            GetASCData(Filename, GetOnlyHeader)
         ElseIf UCase(extension) = ".IRST" Then 'Extensão .IRST (IPH Raster)
-            GetBinaryData(Filename)
+            GetBinaryData(Filename, GetOnlyHeader)
         Else
             Throw New ArgumentException("O tipo de dados selecionado não é compatível!")
         End If
@@ -245,8 +252,8 @@ Public Class RasterInteger
                 bw.Write(_nRows)
                 bw.Write(_xllcorner)
                 bw.Write(_yllcorner)
-                bw.Write(_NODATAValue)
                 bw.Write(_cellsize)
+                bw.Write(_NODATAValue)
 
                 For i = 0 To _nRows - 1
                     For j = 0 To _nCols - 1
@@ -329,7 +336,7 @@ Public Class RasterReal
     End Function
 
     'Lê um raster e retorna dados em real
-    Private Sub GetASCData(ByVal ArquivoASC As String)
+    Private Sub GetASCData(ByVal ArquivoASC As String, ByVal onlyHeader As Boolean)
 
         Dim r As New System.Text.RegularExpressions.Regex(" +")
         Dim val() As String
@@ -344,6 +351,8 @@ Public Class RasterReal
                 val = r.Split(str.ReadLine) : _cellsize = CDbl(val(1)) 'Lê a linha do cellsize
                 val = r.Split(str.ReadLine) : _NODATAValue = CSng(val(1)) 'Lê a linha do NODATA
 
+                If onlyHeader = True Then GoTo endReading 'Lê apenas as informações do cabeçalho, caso ativado
+
                 ReDim _Data(_nRows - 1, _nCols - 1) 'Redimensiona a matriz de dados
 
                 For i = 0 To _nRows - 1
@@ -353,6 +362,8 @@ Public Class RasterReal
                         If _Data(i, j) > _maxValue Then _maxValue = _Data(i, j)
                     Next
                 Next
+
+endreading:
             End Using
         End Using
 
@@ -360,7 +371,7 @@ Public Class RasterReal
     ''' <summary>
     ''' Lê o arquivo no formato Binário
     ''' </summary>
-    Public Sub GetBinaryData(ByVal ArquivoBin As String)
+    Public Sub GetBinaryData(ByVal ArquivoBin As String, ByVal onlyHeader As Boolean)
         Using fs As New IO.FileStream(ArquivoBin, IO.FileMode.Open, IO.FileAccess.Read)
             Using br As New IO.BinaryReader(fs)
 
@@ -369,8 +380,10 @@ Public Class RasterReal
                 _nRows = br.ReadInt32
                 _xllcorner = br.ReadDouble
                 _yllcorner = br.ReadDouble
-                _NODATAValue = br.ReadInt32
                 _cellsize = br.ReadDouble
+                _NODATAValue = br.ReadInt32
+
+                If onlyHeader = True Then GoTo endReading 'Lê apenas as informações do cabeçalho, caso ativado
 
                 'Redimensiona a matriz conforme numero de linhas e colunas
                 ReDim _Data(_nRows - 1, _nCols - 1)
@@ -381,19 +394,20 @@ Public Class RasterReal
                         If _Data(i, j) > _maxValue Then _maxValue = _Data(i, j)
                     Next
                 Next
+endreading:
             End Using
         End Using
     End Sub
     ''' <summary>
     ''' Lê os dados a partir de um arquivo extero
     ''' </summary>
-    Public Sub ReadData(ByVal Filename As String)
+    Public Sub ReadData(ByVal Filename As String, Optional ByVal getOnlyHeader As Boolean = False)
         Dim extension As String = IO.Path.GetExtension(Filename)
 
         If UCase(extension) = ".ASC" Then 'Extensão .ASC
-            GetASCData(Filename)
+            GetASCData(Filename, getOnlyHeader)
         ElseIf UCase(extension) = ".IRST" Then 'Extensão .IRST (IPH Raster)
-            GetBinaryData(Filename)
+            GetBinaryData(Filename, getOnlyHeader)
         Else
             Throw New ArgumentException("O tipo de dados selecionado não é compatível!")
         End If
@@ -439,8 +453,8 @@ Public Class RasterReal
                 bw.Write(_nRows)
                 bw.Write(_xllcorner)
                 bw.Write(_yllcorner)
-                bw.Write(_NODATAValue)
                 bw.Write(_cellsize)
+                bw.Write(_NODATAValue)
 
                 For i = 0 To _nRows - 1
                     For j = 0 To _nCols - 1
