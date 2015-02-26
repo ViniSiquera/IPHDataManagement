@@ -59,5 +59,31 @@ Public Class SpatialAnalyst
             Next
         Next
     End Sub
+     Public Shared Function AreaCell(ByVal linha As Integer, ByVal coluna As Integer, ByVal xll As Double, ByVal yll As Double, ByVal cellsize As Double, ByVal nrows As Integer, ByVal ncols As Integer) As Single        Dim AreaFinal As Double
+        Dim xesq, xdir, yinf, ysup, Xmin, Ymin As Double
+        Xmin = xll
+        Ymin = yll
+        xesq = Xmin + (coluna - 1) * cellsize
+        xdir = xesq + cellsize
+        yinf = Ymin + (nrows - linha) * cellsize
+        ysup = yinf + cellsize
+
+        Dim A = 6378.137
+        Dim B = 6356.752
+        Dim Ylat As Double = (yinf + ysup) / 2
+        Dim F As Double = (A - B) / A
+        Dim E2 As Double = 2 * F - F ^ 2
+        Dim YlatD As Double = Math.PI * Ylat / 180
+        Dim RN As Double = A / (1 - E2 * (Math.Sin(YlatD) ^ 2)) ^ 0.5
+        Dim Rcirc As Double = RN * Math.Cos(YlatD)
+        Dim DGX As Double = xdir - xesq
+        Dim DGY As Double = yinf - ysup
+        Dim DX As Double = Rcirc * DGX * (Math.PI / 180)
+        Dim DY As Double = RN * DGY * (Math.PI / 180)
+        AreaFinal = ((Math.PI * RN ^ 2) / 180) * Math.Abs(Math.Sin(yinf * Math.PI / 180) - Math.Sin(ysup * Math.PI / 180))
+        AreaFinal = (AreaFinal * Math.Abs(xesq - xdir)) * 1000000
+        Return AreaFinal
+
+    End Function
 
 End Class
