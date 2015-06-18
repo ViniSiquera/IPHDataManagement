@@ -59,6 +59,7 @@ Public Class SpatialAnalyst
             Next
         Next
     End Sub
+     
      Public Shared Function AreaCell(ByVal linha As Integer, ByVal coluna As Integer, ByVal xll As Double, ByVal yll As Double, ByVal cellsize As Double, ByVal nrows As Integer, ByVal ncols As Integer) As Single        Dim AreaFinal As Double
         Dim xesq, xdir, yinf, ysup, Xmin, Ymin As Double
         Xmin = xll
@@ -83,6 +84,31 @@ Public Class SpatialAnalyst
         AreaFinal = ((Math.PI * RN ^ 2) / 180) * Math.Abs(Math.Sin(yinf * Math.PI / 180) - Math.Sin(ysup * Math.PI / 180))
         AreaFinal = (AreaFinal * Math.Abs(xesq - xdir)) * 1000000
         Return AreaFinal
+
+    End Function
+
+Public Shared Function CellLength(ByVal Ylat As Single, ByVal Xlong As Single, ByVal RelY As Int16, ByVal relX As Int16, ByVal cellsz As Double) As Single
+
+        'CALCULA DISTANCIAS SOBRE A SUPERFICIE CONSIDERANDO O ELIPSOIDE wgs84
+        'AS EQUAÇÕES UTILIZADAS AQUI FORAM OBTIDAS EM UMA HOMEPAGE DE PETER DANA
+        'DA UNIVERSIDADE DO COLORADO 
+
+        Const A As Single = 6378.137 'COMPRIMENTO DO SEMI EIXO MAIOR DO ELIPSÓIDE (KM)
+        Const B As Single = 6356.752 'COMPRIMENTO DO SEMI EIXO MENOR DO ELIPSÓIDE (KM)
+        Dim F, E2, RN, RCIRC As Double
+
+        F = (A - B) / A '!ACHATAMENTO DO ELIPSÓIDE
+        E2 = (2 * F) - (F ^ 2) '!QUADRADO DA EXCENTRICIDADE
+        RN = A / (1 - E2 * (Math.Sin(Ylat * Math.PI / 180) ^ 2)) ^ 0.5 '!RAIO DE CURVATURA DA TERRA NA LATITUDE
+
+        '!CALCULA RAIO DA CIRCUNFERENCIA DE UM CIRCULO DETERMINADO PELO PLANO 
+        '!QUE CORTA O ELIPSÓIDE NA LATITUDE YLAT
+        RCIRC = RN * Math.Cos(Ylat * Math.PI / 180)
+
+        'Dependendo da direção relativa a partir de qual a célula veio através do Flowdirection (relX, relY), calcula o comprimento
+        If relX = 0 AndAlso RelY <> 0 Then Return (RN * cellsz * (Math.PI / 180.0)) * 0.96194 'Vertical
+        If relX <> 0 AndAlso RelY = 0 Then Return (RCIRC * cellsz * (Math.PI / 180.0)) * 0.96194 'Horizontal
+        If relX <> 0 AndAlso RelY <> 0 Then Return Math.Sqrt(((RN * cellsz * (Math.PI / 180.0)) ^ 2 + (RCIRC * cellsz * (Math.PI / 180.0)) ^ 2)) * (1.36039 / 1.414) 'Diagonal
 
     End Function
 
