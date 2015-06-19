@@ -112,4 +112,23 @@ Public Shared Function CellLength(ByVal Ylat As Single, ByVal Xlong As Single, B
 
     End Function
 
+ 'Extrair um raster a partir de outro
+    Public Shared Function ExtractRasterByRaster(ByVal BigRaster As RasterInteger, ByVal referenceRaster As RasterInteger) As RasterInteger
+
+        'Compatibiliza as informações do raster grande, com o espaço do raster pequeno
+        ResampleData.AdjustSpatialData(BigRaster, referenceRaster)
+
+        For linha = 0 To referenceRaster.Linhas - 1
+            For coluna = 0 To referenceRaster.Colunas - 1
+                'Extrai a informação somente para o intervalo onde houverem valores para o raster de referência
+                If referenceRaster.Dados(linha, coluna) <> referenceRaster.NoDataValue Then
+                    referenceRaster.Dados(linha, coluna) = BigRaster.Dados(linha, coluna)
+                End If
+            Next
+        Next
+
+        Return referenceRaster
+
+    End Function
+
 End Class
